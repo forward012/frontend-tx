@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import Trigger from "./components/Trigger";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Dashboard() {
     const [currentTime, setCurrentTime] = useState();
@@ -10,6 +12,8 @@ function Dashboard() {
     const [timeout, setTimeout] = useState("");
     const [leverage, setLeverage] = useState("");
     const [quantity, setQuantity] = useState("");
+    const [isTrading, setIsTrading] = useState(false);
+    const [isEndTrading, setIsEndTrading] = useState(false);
     const defaultTrigger = {
         symbol: "BTC_USDT",
         // leverage: 1,
@@ -83,13 +87,21 @@ function Dashboard() {
     }, [triggerData1, triggerData2, triggerData3, triggerData4, triggerData5, triggerData6]);
 
     const startTrading = async () => {
+        if(!executionTime) {
+            return toast.warning("Please enter Trading Time!")
+        }
+        if(!leverage || !quantity) {
+            return toast.warning("Please enter leverage and quantify!")
+        }
+        
         const updatedTriggers = triggerDatas.filter(
             (trigger) => JSON.stringify(trigger) !== JSON.stringify(defaultTrigger)
         );
-        console.log("triggerDatas", updatedTriggers);
-
+        if (updatedTriggers.length < 1) {
+            return toast.warning("Please input at least 1 triger price and takeProfit!")
+        }
         try {
-            console.log("Close trading response:", currentDate+" "+executionTime);
+            setIsTrading(true);
             const response = await axios.post(
                 `${SERVER_URL}/api/triggerOrder`, 
                 {
@@ -101,7 +113,11 @@ function Dashboard() {
                     timeout: timeout
                 }
             );
+            toast.info(response.data)
+            setIsTrading(false);
+
             console.log("Close trading response:", response);
+
         } catch (error) {
             console.error("Error closing trading:", error);
         }
@@ -157,7 +173,7 @@ function Dashboard() {
                     value={executionTime}
                     onChange={(e) => setExecutionTime(e.target.value)}
                     className="w-48 mr-4 p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
-                    placeholder="MM:SS"
+                    placeholder="HH:MM:SS"
                 />
                 <input
                     id="time"
@@ -167,6 +183,7 @@ function Dashboard() {
                     className="w-48 p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
                     placeholder="Ex: 30(s)"
                 />
+                <ToastContainer position="top-right" autoClose={5000} />
             </div>
             <div className="flex gap-4 mt-4">
                 Trading Pairs:
@@ -219,7 +236,8 @@ function Dashboard() {
             <Trigger triggerData={triggerData6} side="3" setTriggerData={setTriggerData6} tradingType="Open Short"/>
 
             <button 
-                className="w-full mt-4 bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-300 transition duration-200 ease-in-out cursor-pointer"
+                className={`w-full mt-4 bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-300 transition duration-200 ease-in-out  ${isTrading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                disabled={isTrading}
                 onClick={startTrading}
             >
                 Trading Start

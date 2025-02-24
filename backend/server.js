@@ -87,6 +87,7 @@ app.post("/api/triggerOrder", async (req, res) => {
   console.log("getTimeStamp--Start: ", getTimeStamp());
   // Define the scheduled date and time.
   // Note: "America/New_York" is used so that 2025‑02‑24 15:35:37 is parsed as New York time.
+  let resData = [];
   const executionTime = req.body.executionTime;
   const scheduledTimeNY = moment
     .tz(`${executionTime}`, "America/New_York")
@@ -94,6 +95,10 @@ app.post("/api/triggerOrder", async (req, res) => {
   console.log(
     `Scheduled Time (New York Time): in ${executionTime}`,
     scheduledTimeNY
+  );
+
+  res.send(
+    `Scheduled Time (New York Time): in ${executionTime}(America/New_York)`
   );
   // Schedule the job using node-schedule. At the specified time,
   // the Promise.all call will execute for all orders.
@@ -134,19 +139,23 @@ app.post("/api/triggerOrder", async (req, res) => {
 
     console.log("updatePrices++++++++++++++++++++++++++++++++", updateData);
     console.log("3333getTimeStamp--End: ", getTimeStamp());
-    const postOrder = async (payload) => {
+    const postOrder = async (payload, index) => {
       try {
         const response = await bot.post_order_trigger(payload);
+        resData.push({
+          index: index,
+          response: response,
+        });
         console.log("response: ", response);
       } catch (error) {
         console.error("Error in fetching data:", error);
       }
     };
 
-    await Promise.all(updateData.map((data) => postOrder(data)));
+    await Promise.all(updateData.map((data, index) => postOrder(data, index)));
     // Optionally, send a response immediately to the client indicating scheduling.
-    res.json({ message: "Order trigger scheduled." });
-
+    console.log("resData?//////// ", resData);
+    res.send(resData);
     //30s all orders and positions will close automatically timeout later.
     if (timeout > 0) {
       await setTimeout(async () => {
