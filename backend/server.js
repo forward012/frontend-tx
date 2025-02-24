@@ -6,11 +6,11 @@ const AllApi = require("./api");
 const app = express();
 require("dotenv").config();
 
-app.use(
-  cors({
-    origin: "https://yourdeployedsite.com",
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://yourdeployedsite.com",
+//   })
+// );
 
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
