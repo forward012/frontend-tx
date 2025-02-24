@@ -6,6 +6,7 @@ import axios from "axios";
 function Dashboard() {
     const [currentTime, setCurrentTime] = useState();
     const [executionTime, setExecutionTime] = useState("");
+    const [currentDate, setCurrentDate] = useState("");
     const [timeout, setTimeout] = useState("");
     const [leverage, setLeverage] = useState("");
     const [quantity, setQuantity] = useState("");
@@ -59,8 +60,9 @@ function Dashboard() {
         // Replace slashes with colons and format as required
         const [month, day, year] = date.split('/');
         const [hour, minute, second] = time.split(':');
+        setCurrentDate(`${year}-${month}-${day}`);
         // Return the formatted string
-        return `${hour}:${minute}:${second}-${year}:${month}:${day}`;
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     };
 
     useEffect(() => {
@@ -81,23 +83,13 @@ function Dashboard() {
     }, [triggerData1, triggerData2, triggerData3, triggerData4, triggerData5, triggerData6]);
 
     const startTrading = async () => {
-        // const allTriggers = [
-        //     triggerData1,
-        //     triggerData2,
-        //     triggerData3,
-        //     triggerData4,
-        //     triggerData5,
-        //     triggerData6,
-        // ];
-        // Filter out triggers that haven't changed from their default trigger values.
-        
         const updatedTriggers = triggerDatas.filter(
             (trigger) => JSON.stringify(trigger) !== JSON.stringify(defaultTrigger)
         );
-        // const updatedTriggers_ = updatedTriggers.map()
         console.log("triggerDatas", updatedTriggers);
 
         try {
+            console.log("Close trading response:", currentDate+" "+executionTime);
             const response = await axios.post(
                 `${SERVER_URL}/api/triggerOrder`, 
                 {
@@ -105,7 +97,7 @@ function Dashboard() {
                     leverage: leverage,
                     quantity: quantity,
                     "pairs": pairs,
-                    executionTime: executionTime,
+                    executionTime: currentDate+" "+executionTime,
                     timeout: timeout
                 }
             );
@@ -130,7 +122,6 @@ function Dashboard() {
         //     }
         // };
         // fetchData();
-        
     }
 
     const closeTrading = async () => {
@@ -146,13 +137,20 @@ function Dashboard() {
         <>
         <div className="w-full px-8 ">
             <label htmlFor="time" className="w-full flex justify-center text-4xl font-extrabold tracking-tight lg:text-5xl mb-2 mr-4 text-lg font-semibold text-gray-700">
-                Current Time(UST-5): {currentTime}
+                Current Time(UTC-5, New_York): {currentTime}
             </label>
             
             <div className="w-full flex justify-center items-center ">
                 <label htmlFor="time" className="mb-2 mr-4 text-lg font-semibold text-gray-700">
                     Enter Trading Time: 
                 </label>
+                {/* {
+                    currentTime?.split(":").map((time, index) => (
+                        index === 0 && <label key={index} className="h-8 mr-4 border round-lg">
+                          {time}
+                        </label>
+                    ))
+                } */}
                 <input
                     id="time"
                     type="text"
@@ -212,13 +210,13 @@ function Dashboard() {
                 />
             </div>
 
-            <Trigger triggerData={triggerData1} side="1" setTriggerData={setTriggerData1} />
-            <Trigger triggerData={triggerData2} side="1" setTriggerData={setTriggerData2} />
-            <Trigger triggerData={triggerData3} side="1" setTriggerData={setTriggerData3} />
+            <Trigger triggerData={triggerData1} side="1" setTriggerData={setTriggerData1} tradingType="Open Long" />
+            <Trigger triggerData={triggerData2} side="1" setTriggerData={setTriggerData2} tradingType="Open Long" />
+            <Trigger triggerData={triggerData3} side="1" setTriggerData={setTriggerData3} tradingType="Open Long" />
 
-            <Trigger triggerData={triggerData4} side="3" setTriggerData={setTriggerData4} />
-            <Trigger triggerData={triggerData5} side="3" setTriggerData={setTriggerData5} />
-            <Trigger triggerData={triggerData6} side="3" setTriggerData={setTriggerData6} />
+            <Trigger triggerData={triggerData4} side="3" setTriggerData={setTriggerData4} tradingType="Open Short" />
+            <Trigger triggerData={triggerData5} side="3" setTriggerData={setTriggerData5} tradingType="Open Short"/>
+            <Trigger triggerData={triggerData6} side="3" setTriggerData={setTriggerData6} tradingType="Open Short"/>
 
             <button 
                 className="w-full mt-4 bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-300 transition duration-200 ease-in-out cursor-pointer"

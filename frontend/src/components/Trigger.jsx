@@ -1,6 +1,6 @@
 import React from "react";
 
-function Trigger({ triggerData, side, setTriggerData }) {
+function Trigger({ triggerData, side, setTriggerData, tradingType }) {
   return (
     <div className="flex gap-4 border rounded-xl p-4 mt-4">
       <div className="flex items-center">
@@ -9,7 +9,8 @@ function Trigger({ triggerData, side, setTriggerData }) {
           style={{textWrap: "nowrap"}}
           className="mb-2 mr-4 text-lg font-semibold text-gray-700 text-nowrap"
         >
-          High/Low Trigger Price(%):
+          <label className={`${tradingType.includes("Long") ? "text-green-500 mr-4": "text-red-500 mr-4"}`}>{tradingType}</label>
+           Trigger Price(%):
         </label>
         <input
           id="triggerPrice"
@@ -22,7 +23,7 @@ function Trigger({ triggerData, side, setTriggerData }) {
               side: side
             })
           }
-          className="w-24 p-2 border border-gray-300 rounded-l-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+          className="w-24 p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
           placeholder="%"
         />
         

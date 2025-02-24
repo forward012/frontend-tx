@@ -2,6 +2,9 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const moment = require("moment-timezone");
+const schedule = require("node-schedule");
+
 const AllApi = require("./api");
 const app = express();
 require("dotenv").config();
@@ -80,60 +83,78 @@ const getAvgPrice = async (symbol) => {
 
 app.post("/api/triggerOrder", async (req, res) => {
   console.log("Received Request");
+
   console.log("getTimeStamp--Start: ", getTimeStamp());
-
-  const { data, leverage, quantity, pairs, executionTime, timeout } = req.body;
-
-  const pairsData = await Promise.all(
-    pairs.map(async (pair) => ({
-      symbol: pair,
-      price: await getAvgPrice(pair),
-    }))
+  // Define the scheduled date and time.
+  // Note: "America/New_York" is used so that 2025‑02‑24 15:35:37 is parsed as New York time.
+  const executionTime = req.body.executionTime;
+  const scheduledTimeNY = moment
+    .tz(`${executionTime}`, "America/New_York")
+    .toDate();
+  console.log(
+    `Scheduled Time (New York Time): in ${executionTime}`,
+    scheduledTimeNY
   );
-  console.log("2222getTimeStamp--End: ", getTimeStamp());
+  // Schedule the job using node-schedule. At the specified time,
+  // the Promise.all call will execute for all orders.
+  await schedule.scheduleJob(scheduledTimeNY, async function () {
+    console.log("Running scheduled orders at:", getTimeStamp());
 
-  console.log("datas___________", pairsData);
+    const { data, leverage, quantity, pairs, executionTime, timeout } =
+      req.body;
 
-  const updateData = await pairsData.flatMap((pair) =>
-    data.map((item) => ({
-      symbol: pair.symbol, // use the pair from the pairs array
-      leverage: leverage,
-      triggerType: 1,
-      triggerPrice: (1 + item.triggerPrice / 100) * pair.price,
-      side: item.side,
-      openType: 1,
-      orderType: 5,
-      trend: 1,
-      vol: quantity,
-      stopLossPrice: pair.price * (1 - 0.02 - item.stopLossPrice / 100),
-      executeCycle: 3,
-      marketCeiling: false,
-      positionMode: 1,
-      lossTrend: "1",
-      priceProtect: "0",
-    }))
-  );
-  console.log("3333getTimeStamp--End: ", getTimeStamp());
+    const pairsData = await Promise.all(
+      pairs.map(async (pair) => ({
+        symbol: pair,
+        price: await getAvgPrice(pair),
+      }))
+    );
+    console.log("datas___________", pairsData);
+    console.log("2222getTimeStamp--End: ", getTimeStamp());
 
-  console.log("updatePrices++++++++++++++++++++++++++++++++", updateData);
-  const postOrder = async (payload) => {
-    try {
-      const response = await bot.post_order_trigger(payload);
-      console.log("response: ", response);
-    } catch (error) {
-      console.error("Error in fetching data:", error);
+    const updateData = await pairsData.flatMap((pair) =>
+      data.map((item) => ({
+        symbol: pair.symbol, // use the pair from the pairs array
+        leverage: leverage,
+        triggerType: 1,
+        triggerPrice: (1 + item.triggerPrice / 100) * pair.price,
+        side: item.side,
+        openType: 1,
+        orderType: 5,
+        trend: 1,
+        vol: quantity,
+        stopLossPrice: pair.price * (1 - 0.02 - item.stopLossPrice / 100),
+        executeCycle: 3,
+        marketCeiling: false,
+        positionMode: 1,
+        lossTrend: "1",
+        priceProtect: "0",
+      }))
+    );
+
+    console.log("updatePrices++++++++++++++++++++++++++++++++", updateData);
+    console.log("3333getTimeStamp--End: ", getTimeStamp());
+    const postOrder = async (payload) => {
+      try {
+        const response = await bot.post_order_trigger(payload);
+        console.log("response: ", response);
+      } catch (error) {
+        console.error("Error in fetching data:", error);
+      }
+    };
+
+    await Promise.all(updateData.map((data) => postOrder(data)));
+    // Optionally, send a response immediately to the client indicating scheduling.
+    res.json({ message: "Order trigger scheduled." });
+
+    //30s all orders and positions will close automatically timeout later.
+    if (timeout > 0) {
+      await setTimeout(async () => {
+        await closeAllOrders();
+      }, timeout * 1000);
     }
-  };
-  await Promise.all(updateData.map((data) => postOrder(data)));
-
-  //30s all orders and positions will close automatically timeout later.
-  if (timeout > 0) {
-    await setTimeout(async () => {
-      await closeAllOrders();
-    }, timeout * 1000);
-  }
-
-  console.log("getTimeStamp--End: ", getTimeStamp());
+    console.log("getTimeStamp--End: ", getTimeStamp());
+  });
 });
 
 app.get("/api/closeAllOrdersAndPositions", async (req, res) => {
