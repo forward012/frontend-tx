@@ -142,9 +142,11 @@ app.post("/api/triggerOrder", async (req, res) => {
   await Promise.all(updateData.map((data) => postOrder(data)));
 
   //30s all orders and positions will close automatically timeout later.
-  await setTimeout(async () => {
-    await closeAllOrders();
-  }, timeout * 1000);
+  if (timeout > 0) {
+    await setTimeout(async () => {
+      await closeAllOrders();
+    }, timeout * 1000);
+  }
 
   console.log("getTimeStamp--End: ", getTimeStamp());
 });

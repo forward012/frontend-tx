@@ -36,7 +36,7 @@ function Dashboard() {
     const [triggerData6, setTriggerData6] = useState({ ...defaultTrigger });
     const [triggerDatas, setTriggerDatas] = useState([]);
     const pairs = ["BTC_USDT", "ETH_USDT"];
-    const SERVER_URL = "http://localhost:5000";
+    const SERVER_URL = "https://mexc-backend.onrender.com/";
 
     const getCurrentTimeUSTMinus5 = () => {
         // Create a date object for the current time
