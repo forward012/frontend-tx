@@ -30,6 +30,11 @@ const getTimeStamp = () => {
 };
 
 const bot = new AllApi(KEY, BASE_URL_TEST);
+
+app.get("/api/test", (req, res) => {
+  res.json({ message: "success" });
+});
+
 app.get("/api/order", async (req, res) => {
   console.log("Received Request");
 
