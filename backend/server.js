@@ -20,7 +20,6 @@ const KEY = process.env.KEY;
 
 const BASE_URL_TEST = process.env.BASE_URL_TEST;
 const BASE_URL = process.env.BASE_URL;
-const BASE_URL = "https://futures.mexc.com";
 
 const API_URL = "https://api.mexc.com";
 
