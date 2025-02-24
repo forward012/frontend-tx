@@ -1,7 +1,5 @@
 const crypto = require("crypto");
 const axios = require("axios");
-// import crypto from "crypto";
-// import axios from "axios";
 
 // Generate MD5 hash as hex
 function md5(value) {

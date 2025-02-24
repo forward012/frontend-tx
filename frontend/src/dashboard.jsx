@@ -9,7 +9,6 @@ function Dashboard() {
     const [timeout, setTimeout] = useState("");
     const [leverage, setLeverage] = useState("");
     const [quantity, setQuantity] = useState("");
-
     const defaultTrigger = {
         symbol: "BTC_USDT",
         // leverage: 1,
@@ -35,9 +34,10 @@ function Dashboard() {
     const [triggerData5, setTriggerData5] = useState({ ...defaultTrigger });
     const [triggerData6, setTriggerData6] = useState({ ...defaultTrigger });
     const [triggerDatas, setTriggerDatas] = useState([]);
-    const pairs = ["BTC_USDT", "ETH_USDT"];
-    const SERVER_URL = "https://mexc-backend.onrender.com/";
 
+    const pairs = ["BTC_USDT", "ETH_USDT"];
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    
     const getCurrentTimeUSTMinus5 = () => {
         // Create a date object for the current time
         const currentDate = new Date();

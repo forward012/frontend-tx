@@ -1,47 +1,28 @@
 // server.js
 const express = require("express");
-const { MongoClient } = require("mongodb");
 const cors = require("cors");
-const app = express();
-require("dotenv").config();
 const axios = require("axios");
 const AllApi = require("./api");
-// Connection URI
-const PORT = process.env.PORT; // Choose your port
-// const MONGODB_URI = process.env.MONGODB_URI; // Use your connection string here
-// const DATABASE = process.env.DATABASE;
-// const COLLECTION = process.env.COLLECTION;
-// const client = new MongoClient(MONGODB_URI);
-// const database = client.db(DATABASE); // Replace with your database name
-// const wallet_collection = database.collection(COLLECTION); // Replace with your collection name
+const app = express();
+require("dotenv").config();
+
+app.use(
+  cors({
+    origin: "https://yourdeployedsite.com",
+  })
+);
 
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
-// app.use(cors({
-//   origin: 'https://yourdeployedsite.com'
-// }));
 
-// Connect to MongoDB
-// client
-//   .connect()
-//   .then(() => {
-//     console.log("Connected to MongoDB");
-//   })
-//   .catch((err) => console.error(err));
+const PORT = process.env.PORT; // Choose your port
+const KEY = process.env.KEY;
 
-// GET endpoint to fetch data
-const KEY =
-  "WEB79491cce2b958e3fd6fbc2e11d9ba78112720e1d0cd3417f5dcbafaf50a8ebf9";
-const BASE_URL_TEST = "https://futures.testnet.mexc.com";
+const BASE_URL_TEST = process.env.BASE_URL_TEST;
+const BASE_URL = process.env.BASE_URL;
 const BASE_URL = "https://futures.mexc.com";
 
 const API_URL = "https://api.mexc.com";
-const COOKIES = {
-  uc_token:
-    "WEB79491cce2b958e3fd6fbc2e11d9ba78112720e1d0cd3417f5dcbafaf50a8ebf9",
-};
-const API_KEY = "mx0vgl5e5NTnbJgDRW";
-const API_SECRET = "af814e3b37ed454ea05b9b1ccfb50a85";
 
 const getTimeStamp = () => {
   const date = new Date();
